@@ -10,6 +10,9 @@
 #ifdef USE_DNNL
 #include "core/providers/dnnl/dnnl_provider_factory.h"
 #endif
+#ifdef USE_METAL
+#include "core/providers/metal/metal_provider_factory.h"
+#endif
 #ifdef USE_NGRAPH
 #include "core/providers/ngraph/ngraph_provider_factory.h"
 #endif

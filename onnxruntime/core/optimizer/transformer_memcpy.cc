@@ -72,6 +72,7 @@ common::Status MemcpyTransformer::ApplyImpl(Graph& graph, bool& modified, int gr
     if (provider != onnxruntime::kCpuExecutionProvider &&
         provider != onnxruntime::kDnnlExecutionProvider &&
         provider != onnxruntime::kNGraphExecutionProvider &&
+        provider != onnxruntime::kMetalExecutionProvider &&
         provider != onnxruntime::kNupharExecutionProvider &&
         provider != onnxruntime::kVitisAIExecutionProvider &&
         provider != onnxruntime::kOpenVINOExecutionProvider &&

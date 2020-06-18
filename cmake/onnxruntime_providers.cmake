@@ -39,6 +39,10 @@ if(onnxruntime_USE_NGRAPH)
   set(PROVIDERS_NGRAPH onnxruntime_providers_ngraph)
   list(APPEND ONNXRUNTIME_PROVIDER_NAMES ngraph)
 endif()
+if(onnxruntime_USE_METAL)
+  set(PROVIDERS_METAL onnxruntime_providers_metal)
+  list(APPEND ONNXRUNTIME_PROVIDER_NAMES metal)
+endif()
 if(onnxruntime_USE_NUPHAR)
   set(PROVIDERS_NUPHAR onnxruntime_providers_nuphar)
   list(APPEND ONNXRUNTIME_PROVIDER_NAMES nuphar)
@@ -396,6 +400,31 @@ if (onnxruntime_USE_NGRAPH)
   if (NOT MSVC)
     target_compile_options(onnxruntime_providers_ngraph PRIVATE "SHELL:-Wformat" "SHELL:-Wformat-security" "SHELL:-fstack-protector-strong" "SHELL:-D_FORTIFY_SOURCE=2")
     target_link_options(onnxruntime_providers_ngraph PRIVATE "LINKER:-z, noexecstack " "LINKER:-z relro" "LINKER:-z now" "LINKER:-pie")
+  endif()
+endif()
+
+if (onnxruntime_USE_METAL)
+  add_definitions(-DUSE_METAL=1)
+
+  include_directories("${CMAKE_CURRENT_BINARY_DIR}/onnx")
+  file(GLOB_RECURSE onnxruntime_providers_metal_cc_srcs CONFIGURE_DEPENDS
+    "${ONNXRUNTIME_ROOT}/core/providers/metal/*.h"
+    "${ONNXRUNTIME_ROOT}/core/providers/metal/*.cc"
+    "${ONNXRUNTIME_ROOT}/core/providers/metal/*.mm"
+  )
+
+  source_group(TREE ${ONNXRUNTIME_ROOT}/core FILES ${onnxruntime_providers_metal_cc_srcs})
+  add_library(onnxruntime_providers_metal ${onnxruntime_providers_metal_cc_srcs})
+  onnxruntime_add_include_to_target(onnxruntime_providers_metal onnxruntime_common onnxruntime_framework onnx onnx_proto protobuf::libprotobuf)
+  add_dependencies(onnxruntime_providers_metal onnx ${onnxruntime_EXTERNAL_DEPENDENCIES})
+  set_target_properties(onnxruntime_providers_metal PROPERTIES FOLDER "ONNXRuntime")
+  target_include_directories(onnxruntime_providers_metal PRIVATE ${ONNXRUNTIME_ROOT} ${metal_INCLUDE_DIRS})
+  
+  set_target_properties(onnxruntime_providers_metal PROPERTIES LINKER_LANGUAGE CXX)
+
+  if (NOT MSVC)
+    target_compile_options(onnxruntime_providers_metal PRIVATE "SHELL:-Wformat" "SHELL:-Wformat-security" "SHELL:-fstack-protector-strong" "SHELL:-D_FORTIFY_SOURCE=2")
+    target_link_options(onnxruntime_providers_metal PRIVATE "LINKER:-z, noexecstack " "LINKER:-z relro" "LINKER:-z now" "LINKER:-pie")
   endif()
 endif()
 

@@ -44,7 +44,7 @@ static SessionOptions SESSION_OPTION = {
     {},                                //inter_op_param
     overrides,                         //free_dimension_overrides
     true,                              //use_per_session_threads
-    true                               //thread_pool_allow_spinning
+    false                               //thread_pool_allow_spinning
 };
 
 TrainingRunner::TrainingRunner(Parameters params, const Environment& env)
@@ -659,13 +659,15 @@ void TrainingRunner::RunWithUpdate(VectorString& feed_names,
 #else
     ORT_UNUSED_PARAMETER(step);
 #endif
+    for (int i = 0; i < 100; i++) {
     status = session_.Run(
       RunOptions(),
       pipeline_worker_pool_.worker_states[worker_id].feed_names,
       pipeline_worker_pool_.worker_states[worker_id].feeds,
       pipeline_worker_pool_.worker_states[worker_id].fetch_names,
       &(pipeline_worker_pool_.worker_states[worker_id].fetches));
-  }, worker_id, step_);
+    }
+							 }, worker_id, step_);
 
   // Wait all workers to finish this round of pipeline parallelism.
   // The last batch in a pipeline collects gradient and update the model.

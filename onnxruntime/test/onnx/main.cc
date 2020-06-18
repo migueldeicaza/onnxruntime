@@ -36,8 +36,8 @@ void usage() {
       "\t-r [repeat]: Specifies the number of times to repeat\n"
       "\t-v: verbose\n"
       "\t-n [test_case_name]: Specifies a single test case to run.\n"
-      "\t-e [EXECUTION_PROVIDER]: EXECUTION_PROVIDER could be 'cpu', 'cuda', 'dnnl', 'tensorrt', 'ngraph', "
-      "'openvino', 'nuphar', 'migraphx', 'acl' or 'armnn'. "
+      "\t-e [EXECUTION_PROVIDER]: EXECUTION_PROVIDER could be 'cpu', 'cuda', 'dnnl', 'tensorrt', 'metal', "
+      "'ngraph', 'openvino', 'nuphar', 'migraphx', 'acl' or 'armnn'. "
       "Default: 'cpu'.\n"
       "\t-x: Use parallel executor, default (without -x): sequential executor.\n"
       "\t-d [device_id]: Specifies the device id for multi-device (e.g. GPU). The value should > 0\n"
@@ -98,6 +98,7 @@ int real_main(int argc, char* argv[], Ort::Env& env) {
   bool enable_nuphar = false;
   bool enable_tensorrt = false;
   bool enable_mem_pattern = true;
+  bool enable_metal = false;  
   bool enable_nnapi = false;
   bool enable_dml = false;
   bool enable_acl = false;
@@ -159,6 +160,8 @@ int real_main(int argc, char* argv[], Ort::Env& env) {
             enable_ngraph = true;
           } else if (!CompareCString(optarg, ORT_TSTR("openvino"))) {
             enable_openvino = true;
+          } else if (!CompareCString(optarg, ORT_TSTR("metal"))) {
+            enable_metal = true;
           } else if (!CompareCString(optarg, ORT_TSTR("nuphar"))) {
             enable_nuphar = true;
           } else if (!CompareCString(optarg, ORT_TSTR("tensorrt"))) {
@@ -329,6 +332,15 @@ int real_main(int argc, char* argv[], Ort::Env& env) {
       fprintf(stderr, "DNNL is not supported in this build");
       return -1;
 #endif
+    }
+    if (enable_metal){
+#ifdef USE_NGRAPH
+      Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_Metal(sf, "CPU"));
+#else
+      fprintf(stderr, "Metal is not supported in this build");
+      return -1;
+#endif
+
     }
     if (enable_ngraph) {  // TODO: Re-order the priority?
 #ifdef USE_NGRAPH

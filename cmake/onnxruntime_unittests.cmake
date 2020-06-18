@@ -201,6 +201,13 @@ if (onnxruntime_USE_NGRAPH)
   list(APPEND onnxruntime_test_providers_src ${onnxruntime_test_providers_ngraph_src})
 endif()
 
+if (onnxruntime_USE_METAL)
+  file(GLOB_RECURSE onnxruntime_test_providers_metal_src CONFIGURE_DEPENDS
+    "${TEST_SRC_DIR}/providers/metal/*"
+    )
+  list(APPEND onnxruntime_test_providers_src ${onnxruntime_test_providers_metal_src})
+endif()
+
 if (onnxruntime_USE_NNAPI_DNNLIBRARY)
   file(GLOB_RECURSE onnxruntime_test_providers_nnapi_src CONFIGURE_DEPENDS
     "${TEST_SRC_DIR}/providers/nnapi/*"
@@ -353,6 +360,7 @@ set(ONNXRUNTIME_TEST_LIBS
     ${PROVIDERS_TENSORRT}
     ${PROVIDERS_MIGRAPHX}
     ${PROVIDERS_NGRAPH}
+    ${PROVIDERS_METAL}
     ${PROVIDERS_OPENVINO}
     ${PROVIDERS_NUPHAR}
     ${PROVIDERS_NNAPI}

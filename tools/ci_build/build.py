@@ -346,6 +346,10 @@ def parse_arguments():
     parser.add_argument(
         "--armnn_relu", action='store_true',
         help="Use the Relu operator implementation from the ArmNN EP.")
+    parser.add_argument(
+        "--use_metal", action='store_true',
+        help="Enable Metal Execution Provider.")
+
     return parser.parse_args()
 
 
@@ -629,6 +633,8 @@ def generate_build_tree(cmake_path, source_dir, build_dir, cuda_home, cudnn_home
             "ON" if args.use_armnn else "OFF"),
         "-Donnxruntime_ARMNN_RELU_USE_CPU=" + (
             "OFF" if args.armnn_relu else "ON"),
+        "-Donnxruntime_USE_METAL=" + (
+            "ON" if args.use_metal else "OFF"),
         # Training related flags
         "-Donnxruntime_ENABLE_NVTX_PROFILE=" + (
             "ON" if args.enable_nvtx_profile else "OFF"),

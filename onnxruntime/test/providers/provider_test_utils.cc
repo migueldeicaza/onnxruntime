@@ -706,6 +706,7 @@ void OpTester::Run(
         kCpuExecutionProvider,
         kCudaExecutionProvider,
         kDnnlExecutionProvider,
+        kMetalExecutionProvider,
         kNGraphExecutionProvider,
         kNupharExecutionProvider,
         kTensorrtExecutionProvider,
@@ -765,6 +766,8 @@ void OpTester::Run(
           execution_provider = DefaultCudaExecutionProvider();
         else if (provider_type == onnxruntime::kDnnlExecutionProvider)
           execution_provider = DefaultDnnlExecutionProvider();
+        else if (provider_type == onnxruntime::kMetalExecutionProvider)
+          execution_provider = DefaultMetalExecutionProvider();
         else if (provider_type == onnxruntime::kNGraphExecutionProvider)
           execution_provider = DefaultNGraphExecutionProvider();
         else if (provider_type == onnxruntime::kOpenVINOExecutionProvider)

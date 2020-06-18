@@ -90,6 +90,8 @@ namespace perftest {
           test_config.run_config.optimization_level = ORT_DISABLE_ALL;
         } else if (!CompareCString(optarg, ORT_TSTR("tensorrt"))) {
           test_config.machine_config.provider_type_name = onnxruntime::kTensorrtExecutionProvider;
+        } else if (!CompareCString(optarg, ORT_TSTR("metal"))) {
+          test_config.machine_config.provider_type_name = onnxruntime::kMetalExecutionProvider;
         } else if (!CompareCString(optarg, ORT_TSTR("nnapi"))) {
           test_config.machine_config.provider_type_name = onnxruntime::kNnapiExecutionProvider;
         } else if (!CompareCString(optarg, ORT_TSTR("nuphar"))) {

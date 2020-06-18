@@ -11,6 +11,8 @@ namespace onnxruntime {
 namespace concurrency {
 static std::unique_ptr<ThreadPool>
 CreateThreadPoolHelper(Env* env, OrtThreadPoolParams options) {
+	printf ("SINGLE THREAD\n");
+return nullptr;
   if (options.thread_pool_size == 1)
     return nullptr;
   std::vector<size_t> cpu_list;
@@ -23,6 +25,8 @@ CreateThreadPoolHelper(Env* env, OrtThreadPoolParams options) {
     if (cpu_list.empty() || cpu_list.size() == 1)
       return nullptr;
     options.thread_pool_size = static_cast<int>(cpu_list.size());
+    printf ("Hardcoding to 2 threads\n");
+    options.thread_pool_size = 2;
     if (options.auto_set_affinity)
       to.affinity = cpu_list;
   }

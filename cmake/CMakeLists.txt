@@ -56,6 +56,7 @@ option(onnxruntime_USE_DNNL "Build with DNNL support" OFF)
 option(onnxruntime_USE_MKLML "Build the default cpu provider with MKL-ML binary dependency" OFF)
 option(onnxruntime_USE_FEATURIZERS "Build ML Featurizers support" OFF)
 option(onnxruntime_USE_NGRAPH "Build with nGraph support" OFF)
+option(onnxruntime_USE_METAL "Build with Apple Metal support" OFF)
 option(onnxruntime_USE_OPENBLAS "Use openblas" OFF)
 option(onnxruntime_DEV_MODE "Enable developer warnings and treat most of them as error." OFF)
 option(onnxruntime_USE_JEMALLOC "Use jemalloc" OFF)
@@ -516,6 +517,16 @@ if (onnxruntime_USE_ACL OR onnxruntime_USE_ACL_1902 OR onnxruntime_USE_ACL_1905 
 
   list(APPEND onnxruntime_EXTERNAL_LIBRARIES arm_compute arm_compute_graph arm_compute_core)
 endif()
+
+# Metal
+if (onnxruntime_USE_METAL)
+  if (NOT onnxruntime_ARMNN_RELU_USE_CPU)
+    add_definitions(-DRELU_ARMNN=1)
+  endif()
+
+  list(APPEND onnxruntime_EXTERNAL_LIBRARIES /System/Library/Frameworks/MetalPerformanceShaders.framework)
+endif()
+
 
 # ArmNN
 if (onnxruntime_USE_ARMNN)
