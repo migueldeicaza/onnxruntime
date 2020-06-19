@@ -335,7 +335,7 @@ int real_main(int argc, char* argv[], Ort::Env& env) {
     }
     if (enable_metal){
 #ifdef USE_NGRAPH
-      Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_Metal(sf, "CPU"));
+      Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_Metal(sf));
 #else
       fprintf(stderr, "Metal is not supported in this build");
       return -1;

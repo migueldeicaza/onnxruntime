@@ -14,6 +14,7 @@ std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_CUDA(O
                                                                                size_t cuda_mem_limit = std::numeric_limits<size_t>::max(),
                                                                                ArenaExtendStrategy arena_extend_strategy = ArenaExtendStrategy::kNextPowerOfTwo);
 std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_Dnnl(int use_arena);
+std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_Metal();
 std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_NGraph(const char* ng_backend_type);
 std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_OpenVINO(const char* device_id);
 std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_Nuphar(bool, const char*);
@@ -75,6 +76,14 @@ std::unique_ptr<IExecutionProvider> DefaultDnnlExecutionProvider(bool enable_are
 std::unique_ptr<IExecutionProvider> DefaultNGraphExecutionProvider() {
 #ifdef USE_NGRAPH
   return CreateExecutionProviderFactory_NGraph("CPU")->CreateProvider();
+#else
+  return nullptr;
+#endif
+}
+
+std::unique_ptr<IExecutionProvider> DefaultMetalExecutionProvider() {
+#ifdef USE_METAL
+  return CreateExecutionProviderFactory_Metal()->CreateProvider();
 #else
   return nullptr;
 #endif

@@ -6,7 +6,6 @@
 namespace onnxruntime {
 namespace Metal_ep {
 
-
 ONNX_OPERATOR_VERSIONED_KERNEL_EX(
     Gemm,
     kOnnxDomain,

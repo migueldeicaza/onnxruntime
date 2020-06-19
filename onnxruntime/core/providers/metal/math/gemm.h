@@ -13,10 +13,9 @@ namespace Metal_ep {
 //typedef std::map<OpKernel*, armnn::NetworkId>::iterator GEMMLayersIterator;
 
 template <typename T>
-class Gemm { //: public onnxruntime::Gemm<T> {
-        T foo;
+class Gemm : public onnxruntime::OpKernel {
  public:
-  Gemm(const OpKernelInfo& info) { // : onnxruntime::Gemm<T>(info) {
+  Gemm(const OpKernelInfo& info) : onnxruntime::OpKernel(info) {
           int64_t temp;
           ORT_ENFORCE(info.GetAttr<int64_t>("transA", &temp).IsOK());
 

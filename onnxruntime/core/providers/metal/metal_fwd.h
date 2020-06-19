@@ -5,7 +5,7 @@
 #pragma once
 
 namespace onnxruntime {
-namespace metal_ep {
+namespace Metal_ep {
 template <typename T>
 KernelCreateInfo BuildKernelCreateInfo();
 }

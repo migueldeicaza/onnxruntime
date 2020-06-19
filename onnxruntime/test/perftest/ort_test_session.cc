@@ -52,7 +52,7 @@ OnnxRuntimeTestSession::OnnxRuntimeTestSession(Ort::Env& env, std::random_device
 #endif
   } else if (provider_name == onnxruntime::kMetalExecutionProvider) {
 #ifdef USE_METAL
-    Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_Metal(session_options, 0, ""));
+    Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_Metal(session_options));
 #else
     ORT_THROW("Metal is not supported in this build\n");
 #endif

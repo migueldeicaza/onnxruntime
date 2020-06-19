@@ -9,27 +9,26 @@
 namespace onnxruntime {
 
 struct MetalProviderFactory : IExecutionProviderFactory {
-  MetalProviderFactory(bool create_arena) : create_arena_(create_arena) {}
+  MetalProviderFactory() {}
   ~MetalProviderFactory() override {}
   std::unique_ptr<IExecutionProvider> CreateProvider() override;
 
  private:
-  bool create_arena_;
+  
 };
 
 std::unique_ptr<IExecutionProvider> MetalProviderFactory::CreateProvider() {
   MetalExecutionProviderInfo info;
-  info.create_arena = create_arena_;
   return std::make_unique<MetalExecutionProvider>(info);
 }
 
-std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_Metal(int use_arena) {
-  return std::make_shared<onnxruntime::MetalProviderFactory>(use_arena != 0);
+std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_Metal() {
+  return std::make_shared<onnxruntime::MetalProviderFactory>();
 }
 
 }  // namespace onnxruntime
 
-ORT_API_STATUS_IMPL(OrtSessionOptionsAppendExecutionProvider_Metal, _In_ OrtSessionOptions* options, int use_arena) {
-  options->provider_factories.push_back(onnxruntime::CreateExecutionProviderFactory_Metal(use_arena));
+ORT_API_STATUS_IMPL(OrtSessionOptionsAppendExecutionProvider_Metal, _In_ OrtSessionOptions* options) {
+  options->provider_factories.push_back(onnxruntime::CreateExecutionProviderFactory_Metal());
   return nullptr;
 }
