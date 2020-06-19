@@ -12,12 +12,9 @@ namespace onnxruntime {
 
 // Information needed to construct Metal execution providers.
 struct MetalExecutionProviderInfo {
-  bool create_arena{true};
 
-  explicit MetalExecutionProviderInfo(bool use_arena)
-      : create_arena(use_arena) {}
-
-  MetalExecutionProviderInfo() = default;
+  explicit MetalExecutionProviderInfo() {}
+  //MetalExecutionProviderInfo() = default;
 };
 
 // Logical device representation.
