@@ -38,5 +38,53 @@ constexpr const char* kDmlExecutionProvider = "DmlExecutionProvider";
 constexpr const char* kMIGraphXExecutionProvider = "MIGraphXExecutionProvider";
 constexpr const char* kAclExecutionProvider = "ACLExecutionProvider";
 constexpr const char* kArmNNExecutionProvider = "ArmNNExecutionProvider";
+
 constexpr const char* kMetalExecutionProvider = "MetalExecutionProvider";
+
+constexpr const char *providers_available[] = {
+  kCpuExecutionProvider,
+#ifdef USE_CUDA
+  kCudaExecutionProvider,
+#endif
+#ifdef USE_DNNL
+  kDnnlExecutionProvider,
+#endif
+#ifdef USE_METAL
+  kMetalExecutionProvider,
+#endif
+#ifdef USE_NGRAPH
+  kNGraphExecutionProvider,
+#endif
+#ifdef USE_OPENVINO
+  kOpenVINOExecutionProvider,
+#endif
+#ifdef USE_NUPHAR
+  kNupharExecutionProvider,
+#endif
+#ifdef USE_VITISAI
+  kVitisAIExecutionProvider,
+#endif
+#ifdef USE_TENSORRT
+  kTensorrtExecutionProvider,
+#endif
+#ifdef USE_NNAPI
+  kNnapiExecutionProvider,
+#endif
+#ifdef USE_RKNPU
+  kRknpuExecutionProvider,
+#endif
+#ifdef USE_DML
+  kDmlExecutionProvider,
+#endif
+#ifdef USE_MIGRAPHX
+  kMIGraphXExecutionProvider,
+#endif
+#ifdef USE_ACL
+  kAclExecutionProvider,
+#endif
+#ifdef USE_ARMNN
+  kArmNNExecutionProvider,
+#endif
+};
+>>>>>>> master
 }  // namespace onnxruntime
