@@ -86,5 +86,4 @@ constexpr const char *providers_available[] = {
   kArmNNExecutionProvider,
 #endif
 };
->>>>>>> master
 }  // namespace onnxruntime
