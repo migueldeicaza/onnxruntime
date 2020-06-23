@@ -429,11 +429,10 @@ if (onnxruntime_USE_METAL)
   target_include_directories(onnxruntime_providers_metal PRIVATE ${ONNXRUNTIME_ROOT} ${metal_INCLUDE_DIRS})
   
   set_target_properties(onnxruntime_providers_metal PROPERTIES LINKER_LANGUAGE CXX)
-
-  if (NOT MSVC)
-    target_compile_options(onnxruntime_providers_metal PRIVATE "SHELL:-Wformat" "SHELL:-Wformat-security" "SHELL:-fstack-protector-strong" "SHELL:-D_FORTIFY_SOURCE=2")
-    target_link_options(onnxruntime_providers_metal PRIVATE "LINKER:-z, noexecstack " "LINKER:-z relro" "LINKER:-z now" "LINKER:-pie")
-  endif()
+  
+  target_compile_options(onnxruntime_providers_metal PRIVATE "SHELL:-Wformat" "SHELL:-Wformat-security" "SHELL:-fstack-protector-strong" "SHELL:-D_FORTIFY_SOURCE=2")
+  target_link_options(onnxruntime_providers_metal PRIVATE "LINKER:-z, noexecstack " "LINKER:-z relro" "LINKER:-z now" "LINKER:-pie")
+  target_link_libraries(onnxruntime_providers_metal "-l objc" "-framework Foundation" "-framework Metal" "-framework MetalPerformanceShaders")
 endif()
 
 if (onnxruntime_USE_NUPHAR)

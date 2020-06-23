@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Copyright (c) 2020, NXP Semiconductor, Inc. All rights reserved.
 // Licensed under the MIT License.
+#import <Foundation/Foundation.h>
+#import <Metal/Metal.h>
+#import <MetalPerformanceShaders/MetalPerformanceShaders.h>
 
 #include "metal_execution_provider.h"
 #include "core/framework/allocator.h"
@@ -54,6 +57,16 @@ static void RegisterMetalKernels(KernelRegistry& kernel_registry) {
 
 }
 
+static id<MTLDevice> _Nonnull metalDevice;
+static id<MTLCommandQueue> _Nonnull metalCommandQueue;
+
+void metal_init()
+{
+  // Get the metal device and commandQueue to be used.
+  metalDevice = MTLCreateSystemDefaultDevice();
+  metalCommandQueue = [metalDevice newCommandQueue];
+}
+
 std::shared_ptr<KernelRegistry> GetMetalKernelRegistry() {
   std::shared_ptr<KernelRegistry> kernel_registry = std::make_shared<KernelRegistry>();
   RegisterMetalKernels(*kernel_registry);
@@ -67,29 +80,23 @@ MetalExecutionProvider::MetalExecutionProvider(const MetalExecutionProviderInfo&
     : IExecutionProvider{onnxruntime::kMetalExecutionProvider} {
   ORT_UNUSED_PARAMETER(info);
 
-  auto default_allocator_factory = [](int) {
-    auto memory_info = onnxruntime::make_unique<OrtMemoryInfo>(Metal, OrtAllocatorType::OrtDeviceAllocator);
-    return onnxruntime::make_unique<CPUAllocator>(std::move(memory_info));
-  };
+  DeviceAllocatorRegistrationInfo device_info(
+      {OrtMemTypeDefault,
+       [](int) {
+         return onnxruntime::make_unique<CPUAllocator>(OrtMemoryInfo(Metal_CPU, OrtAllocatorType::OrtDeviceAllocator));
+       },
+       std::numeric_limits<size_t>::max()});
 
-  DeviceAllocatorRegistrationInfo default_memory_info{
-      OrtMemTypeDefault,
-      std::move(default_allocator_factory),
-      std::numeric_limits<size_t>::max()};
+  InsertAllocator(CreateAllocator(device_info));
 
-  InsertAllocator(CreateAllocator(default_memory_info));
-
-  auto cpu_allocator_factory = [](int) {
-    auto memory_info = onnxruntime::make_unique<OrtMemoryInfo>(
-        Metal_CPU, OrtAllocatorType::OrtDeviceAllocator, OrtDevice(), 0, OrtMemTypeCPUOutput);
-    return onnxruntime::make_unique<CPUAllocator>(std::move(memory_info));
-  };
-
-  DeviceAllocatorRegistrationInfo cpu_memory_info{
-      OrtMemTypeCPUOutput,
-      std::move(cpu_allocator_factory),
-      std::numeric_limits<size_t>::max()};
-
+  DeviceAllocatorRegistrationInfo cpu_memory_info(
+      {OrtMemTypeCPUOutput,
+       [](int) {
+         return onnxruntime::make_unique<CPUAllocator>(
+             OrtMemoryInfo(Metal_CPU, OrtAllocatorType::OrtDeviceAllocator, OrtDevice(), 0, OrtMemTypeCPUOutput));
+       },
+       std::numeric_limits<size_t>::max()});
+ 
   InsertAllocator(CreateAllocator(cpu_memory_info));
 }
 
