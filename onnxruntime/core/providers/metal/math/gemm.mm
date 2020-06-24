@@ -1,3 +1,5 @@
+#import <Metal/Metal.h>
+#import <MetalPerformanceShaders/MetalPerformanceShaders.h>
 
 #include "core/providers/metal/metal_common.h"
 #include "core/providers/metal/math/gemm.h"

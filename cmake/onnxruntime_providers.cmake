@@ -426,13 +426,14 @@ if (onnxruntime_USE_METAL)
   onnxruntime_add_include_to_target(onnxruntime_providers_metal onnxruntime_common onnxruntime_framework onnx onnx_proto protobuf::libprotobuf)
   add_dependencies(onnxruntime_providers_metal onnx ${onnxruntime_EXTERNAL_DEPENDENCIES})
   set_target_properties(onnxruntime_providers_metal PROPERTIES FOLDER "ONNXRuntime")
-  target_include_directories(onnxruntime_providers_metal PRIVATE ${ONNXRUNTIME_ROOT} ${metal_INCLUDE_DIRS})
-  
+  target_include_directories(onnxruntime_providers_metal PRIVATE ${ONNXRUNTIME_ROOT} ${eigen_INCLUDE_DIRS} ${metal_INCLUDE_DIRS})
+
   set_target_properties(onnxruntime_providers_metal PROPERTIES LINKER_LANGUAGE CXX)
   
-  target_compile_options(onnxruntime_providers_metal PRIVATE "SHELL:-Wformat" "SHELL:-Wformat-security" "SHELL:-fstack-protector-strong" "SHELL:-D_FORTIFY_SOURCE=2")
+  target_compile_options(onnxruntime_providers_metal PRIVATE "SHELL:-Wformat" "SHELL:-Wformat-security" "SHELL:-fstack-protector-strong" "SHELL:-D_FORTIFY_SOURCE=2" 
+  "SHELL:-mmacosx-version-min=10.13")
   target_link_options(onnxruntime_providers_metal PRIVATE "LINKER:-z, noexecstack " "LINKER:-z relro" "LINKER:-z now" "LINKER:-pie")
-  target_link_libraries(onnxruntime_providers_metal "-l objc" "-framework Foundation" "-framework Metal" "-framework MetalPerformanceShaders")
+  target_link_libraries(onnxruntime_providers_metal "-l objc" "-framework Foundation" "-framework Metal" "-framework CoreGraphics" "-framework MetalPerformanceShaders")
 endif()
 
 if (onnxruntime_USE_NUPHAR)

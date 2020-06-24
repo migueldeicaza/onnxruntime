@@ -3,6 +3,9 @@
 // Licensed under the MIT License.
 
 #pragma once
+#import <Foundation/Foundation.h>
+#import <Metal/Metal.h>
+#import <MetalPerformanceShaders/MetalPerformanceShaders.h>
 
 #include "core/framework/allocatormgr.h"
 #include "core/framework/execution_provider.h"
@@ -27,12 +30,17 @@ class MetalExecutionProvider : public IExecutionProvider {
       const onnxruntime::GraphViewer& graph,
       const std::vector<const KernelRegistry*>& kernel_registries) const override;
 
-  const void* GetExecutionHandle() const noexcept override {
+  const void * _Nullable GetExecutionHandle() const noexcept override {
     // The Metal interface does not return anything interesting.
     return nullptr;
   }
 
   std::shared_ptr<KernelRegistry> GetKernelRegistry() const override;
 };
+
+namespace Metal_ep {
+extern id<MTLDevice> _Nonnull metalDevice;
+extern id<MTLCommandQueue> _Nonnull metalCommandQueue;
+}
 
 }  // namespace onnxruntime

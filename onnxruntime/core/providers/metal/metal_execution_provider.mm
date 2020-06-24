@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Copyright (c) 2020, NXP Semiconductor, Inc. All rights reserved.
 // Licensed under the MIT License.
-#import <Foundation/Foundation.h>
-#import <Metal/Metal.h>
-#import <MetalPerformanceShaders/MetalPerformanceShaders.h>
 
 #include "metal_execution_provider.h"
 #include "core/framework/allocator.h"
@@ -57,8 +54,8 @@ static void RegisterMetalKernels(KernelRegistry& kernel_registry) {
 
 }
 
-static id<MTLDevice> _Nonnull metalDevice;
-static id<MTLCommandQueue> _Nonnull metalCommandQueue;
+id<MTLDevice> _Nonnull metalDevice;
+id<MTLCommandQueue> _Nonnull metalCommandQueue;
 
 void metal_init()
 {
@@ -97,6 +94,7 @@ MetalExecutionProvider::MetalExecutionProvider(const MetalExecutionProviderInfo&
        },
        std::numeric_limits<size_t>::max()});
  
+  Metal_ep::metal_init();
   InsertAllocator(CreateAllocator(cpu_memory_info));
 }
 
