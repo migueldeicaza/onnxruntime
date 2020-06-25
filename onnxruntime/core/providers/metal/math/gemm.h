@@ -64,7 +64,7 @@ class Gemm : public onnxruntime::OpKernel {
     T* y_data = Y->MutableData<T>();
 
     auto xShape = X->Shape();
-    id<MTLBuffer> _Nullable xBuffer = [metalDevice newBufferWithLength: xShape.Size()*sizeof(float) options: MTLResourceCPUCacheModeWriteCombined];
+    id<MTLBuffer> _Nullable xBuffer = [metalDevice newBufferWithBytes: X->Data<T>() length: xShape.Size()*sizeof(float) options: MTLResourceCPUCacheModeWriteCombined];
     MPSMatrixDescriptor *descX = [MPSMatrixDescriptor 
         matrixDescriptorWithRows: M
         columns: K
@@ -73,7 +73,7 @@ class Gemm : public onnxruntime::OpKernel {
     MPSMatrix *matrixX = [[MPSMatrix alloc] initWithBuffer: xBuffer descriptor: descX];
 
     auto wShape = W->Shape();
-    id<MTLBuffer> _Nullable wBuffer = [metalDevice newBufferWithLength: wShape.Size()*sizeof(float) options: MTLResourceCPUCacheModeWriteCombined];
+    id<MTLBuffer> _Nullable wBuffer = [metalDevice newBufferWithBytes: W->Data<T>() length: wShape.Size()*sizeof(float) options: MTLResourceCPUCacheModeWriteCombined];
     MPSMatrixDescriptor *descW = [MPSMatrixDescriptor 
         matrixDescriptorWithRows: K
         columns: N
@@ -110,7 +110,7 @@ class Gemm : public onnxruntime::OpKernel {
     [cmdBuffer commit];
     [cmdBuffer waitUntilCompleted];
     auto data = [matrixResult data];
-    memcpy (y_data, [data contents], [data length]);
+    //memcpy (y_data, [data contents], [data length]);
     return Status::OK();
   }
 
