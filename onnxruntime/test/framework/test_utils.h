@@ -18,6 +18,9 @@
 #ifdef USE_NNAPI
 #include "core/providers/nnapi/nnapi_builtin/nnapi_execution_provider.h"
 #endif
+#ifdef USE_MLCOMPUTE
+#include "core/providers/mlcompute/mlcompute_execution_provider.h"
+#endif
 #ifdef USE_RKNPU
 #include "core/providers/rknpu/rknpu_execution_provider.h"
 #endif
@@ -45,6 +48,10 @@ IExecutionProvider* TestOpenVINOExecutionProvider();
 
 #ifdef USE_NNAPI
 IExecutionProvider* TestNnapiExecutionProvider();
+#endif
+
+#ifdef USE_MLCOMPUTE
+IExecutionProvider* TestMlComputeExecutionProvider();
 #endif
 
 #ifdef USE_RKNPU

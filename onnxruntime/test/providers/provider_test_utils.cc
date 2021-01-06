@@ -807,6 +807,8 @@ void OpTester::Run(
           execution_provider = DefaultTensorrtExecutionProvider();
         else if (provider_type == onnxruntime::kNnapiExecutionProvider)
           execution_provider = DefaultNnapiExecutionProvider();
+        else if (provider_type == onnxruntime::kMLComputeExecutionProvider)
+          execution_provider = DefaultMlComputeExecutionProvider();
         else if (provider_type == onnxruntime::kRknpuExecutionProvider)
           execution_provider = DefaultRknpuExecutionProvider();
         else if (provider_type == onnxruntime::kAclExecutionProvider)

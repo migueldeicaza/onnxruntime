@@ -25,6 +25,7 @@ std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_Dnnl(i
 std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_OpenVINO(const OrtOpenVINOProviderOptions* params);
 std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_Nuphar(bool, const char*);
 std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_Nnapi(uint32_t);
+std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_MlCompute();
 std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_Rknpu();
 std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_Tensorrt(int device_id);
 std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_MIGraphX(int device_id);
@@ -101,6 +102,15 @@ std::unique_ptr<IExecutionProvider> DefaultNnapiExecutionProvider() {
 // Make it unavailable here, you can still manually append NNAPI EP to session for model conversion
 #if defined(USE_NNAPI) && defined(__ANDROID__)
   return CreateExecutionProviderFactory_Nnapi(0)->CreateProvider();
+#else
+  return nullptr;
+#endif
+}
+
+
+std::unique_ptr<IExecutionProvider> DefaultMlComputeExecutionProvider() {
+#if defined(USE_MLCOMPUTE)
+  return CreateExecutionProviderFactory_MlCompute()->CreateProvider();
 #else
   return nullptr;
 #endif

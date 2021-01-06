@@ -46,7 +46,13 @@ IExecutionProvider* TestNnapiExecutionProvider() {
   return &nnapi_provider;
 }
 #endif
+#ifdef USE_MLCOMPUTE
 
+IExecutionProvider* TestMlComputeExecutionProvider() {
+  static MlComputeExecutionProvider mlcompute_provider = MlComputeExecutionProvider ();
+  return &mlcompute_provider;
+}
+#endif
 #ifdef USE_RKNPU
 IExecutionProvider* TestRknpuExecutionProvider() {
   static RknpuExecutionProvider rknpu_provider;

@@ -66,6 +66,7 @@ option(onnxruntime_USE_DNNL "Build with DNNL support" OFF)
 option(onnxruntime_USE_MKLML "Build the default cpu provider with MKL-ML binary dependency" OFF)
 option(onnxruntime_USE_FEATURIZERS "Build ML Featurizers support" OFF)
 option(onnxruntime_USE_OPENBLAS "Use openblas" OFF)
+option(onnxruntime_USE_MLCOMPUTE "Use MLCompute for Apple operating systems" OFF)
 option(onnxruntime_DEV_MODE "Enable developer warnings and treat most of them as error." OFF)
 option(onnxruntime_USE_JEMALLOC "Use jemalloc" OFF)
 option(onnxruntime_MSVC_STATIC_RUNTIME "Compile for the static CRT" OFF)
@@ -719,6 +720,11 @@ if (onnxruntime_USE_ACL OR onnxruntime_USE_ACL_1902 OR onnxruntime_USE_ACL_1905 
 
 endif()
 
+# MLCompute
+if (onnxruntime_USE_MLCOMPUTE)
+    list(APPEND onnxruntime_EXTERNAL_LIBRARIES /System/Library/Frameworks/MLCompute.framework)
+endif()
+
 # ArmNN
 if (onnxruntime_USE_ARMNN)
   if (NOT onnxruntime_ARMNN_RELU_USE_CPU)
@@ -955,8 +961,10 @@ else()
   string(APPEND CMAKE_C_FLAGS " -Wall -Wextra -ffunction-sections -fdata-sections")
 
   if(onnxruntime_DEV_MODE)
-    string(APPEND CMAKE_CXX_FLAGS " -Werror")
-    string(APPEND CMAKE_C_FLAGS " -Werror")
+    if (NOT onnxruntime_USE_MLCOMPUTE) 
+      string(APPEND CMAKE_CXX_FLAGS " -Werror")
+      string(APPEND CMAKE_C_FLAGS " -Werror")
+    endif()
   endif()
   check_cxx_compiler_flag(-Wunused-but-set-variable HAS_UNUSED_BUT_SET_VARIABLE)
   check_cxx_compiler_flag(-Wunused-parameter HAS_UNUSED_PARAMETER)

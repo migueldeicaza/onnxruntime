@@ -54,7 +54,11 @@ file(GLOB onnxruntime_providers_common_srcs CONFIGURE_DEPENDS
   "${ONNXRUNTIME_ROOT}/core/providers/*.h"
   "${ONNXRUNTIME_ROOT}/core/providers/*.cc"
 )
-
+ 
+if(onnxruntime_USE_MLCOMPUTE)
+  set(PROVIDERS_MLCOMPUTE onnxruntime_providers_mlcompute)
+  list(APPEND ONNXRUNTIME_PROVIDER_NAMES mlcompute)
+endif()
 if(onnxruntime_USE_NUPHAR)
   set(PROVIDERS_NUPHAR onnxruntime_providers_nuphar)
   list(APPEND ONNXRUNTIME_PROVIDER_NAMES nuphar)
@@ -480,6 +484,30 @@ if (onnxruntime_USE_TENSORRT)
           LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
           RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
+
+if (onnxruntime_USE_MLCOMPUTE)
+  add_definitions(-DUSE_MLCOMPUTE=1)
+
+  include_directories("${CMAKE_CURRENT_BINARY_DIR}/onnx")
+  file(GLOB_RECURSE onnxruntime_providers_mlcompute_cc_srcs CONFIGURE_DEPENDS
+    "${ONNXRUNTIME_ROOT}/core/providers/mlcompute/*.h"
+    "${ONNXRUNTIME_ROOT}/core/providers/mlcompute/*.cc"
+    "${ONNXRUNTIME_ROOT}/core/providers/mlcompute/*.mm"
+  )
+
+  source_group(TREE ${ONNXRUNTIME_ROOT}/core FILES ${onnxruntime_providers_mlcompute_cc_srcs})
+  add_library(onnxruntime_providers_mlcompute ${onnxruntime_providers_mlcompute_cc_srcs})
+  onnxruntime_add_include_to_target(onnxruntime_providers_mlcompute onnxruntime_common onnxruntime_framework onnx onnx_proto protobuf::libprotobuf)
+  add_dependencies(onnxruntime_providers_mlcompute onnx ${onnxruntime_EXTERNAL_DEPENDENCIES})
+  set_target_properties(onnxruntime_providers_mlcompute PROPERTIES FOLDER "ONNXRuntime")
+  target_include_directories(onnxruntime_providers_mlcompute PRIVATE ${ONNXRUNTIME_ROOT} ${mlcompute_INCLUDE_DIRS})
+  
+  set_target_properties(onnxruntime_providers_mlcompute PROPERTIES LINKER_LANGUAGE CXX)
+
+  target_compile_options(onnxruntime_providers_mlcompute PRIVATE "SHELL:-Wformat" "SHELL:-Wformat-security" "SHELL:-fstack-protector-strong" "SHELL:-D_FORTIFY_SOURCE=2")
+  target_link_options(onnxruntime_providers_mlcompute PRIVATE "LINKER:-z, noexecstack " "LINKER:-z relro" "LINKER:-z now" "LINKER:-pie")
+endif()
+
 
 if (onnxruntime_USE_NUPHAR)
   add_definitions(-DUSE_NUPHAR=1)

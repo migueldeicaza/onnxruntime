@@ -288,6 +288,13 @@ if (onnxruntime_USE_DNNL)
   list(APPEND onnxruntime_test_providers_src ${onnxruntime_test_providers_dnnl_src})
 endif()
 
+if (onnxruntime_USE_MLCOMPUTE)
+  file(GLOB_RECURSE onnxruntime_test_providers_mlcompute_src CONFIGURE_DEPENDS
+    "${TEST_SRC_DIR}/providers/mlcompute/*"
+    )
+  list(APPEND onnxruntime_test_providers_src ${onnxruntime_test_providers_mlcompute_src})
+endif()
+
 if (onnxruntime_USE_NNAPI_BUILTIN)
   file(GLOB_RECURSE onnxruntime_test_providers_nnapi_src CONFIGURE_DEPENDS
     "${TEST_SRC_DIR}/providers/nnapi/*"
@@ -454,6 +461,7 @@ set(ONNXRUNTIME_TEST_LIBS
     ${PROVIDERS_DML}
     ${PROVIDERS_ACL}
     ${PROVIDERS_ARMNN}
+    ${PROVIDERS_MLCOMPUTE}
     ${PROVIDERS_ROCM}
     onnxruntime_optimizer
     onnxruntime_providers
