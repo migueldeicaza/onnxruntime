@@ -293,6 +293,9 @@ if (onnxruntime_USE_MLCOMPUTE)
     "${TEST_SRC_DIR}/providers/mlcompute/*"
     )
   list(APPEND onnxruntime_test_providers_src ${onnxruntime_test_providers_mlcompute_src})
+  list(APPEND onnxruntime_test_framework_src_patterns  ${TEST_SRC_DIR}/providers/mlcompute/*)
+  list(APPEND onnxruntime_test_framework_libs onnxruntime_providers_mlcompute)
+  list(APPEND onnxruntime_test_providers_dependencies onnxruntime_providers_mlcompute)
 endif()
 
 if (onnxruntime_USE_NNAPI_BUILTIN)

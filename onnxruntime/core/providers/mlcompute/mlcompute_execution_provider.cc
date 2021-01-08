@@ -8,6 +8,11 @@
 #include "core/framework/compute_capability.h"
 #include "core/graph/graph_viewer.h"
 #include "core/session/onnxruntime_cxx_api.h"
+#include "core/framework/feeds_fetches_manager.h"
+#include "core/framework/op_kernel_context_internal.h"
+#include "core/framework/session_state.h"
+#include "core/framework/tensorprotoutils.h"
+#include "core/framework/utils.h"
 
 
 namespace onnxruntime {
@@ -15,7 +20,8 @@ namespace onnxruntime {
 constexpr const char* MlCompute = "MlCompute";
 
 MlComputeExecutionProvider::MlComputeExecutionProvider()
-    : IExecutionProvider{onnxruntime::kMLComputeExecutionProvider} {
+    : IExecutionProvider{onnxruntime::kMLComputeExecutionProvider} 
+    {
   AllocatorCreationInfo device_info(
       [](int) {
         return onnxruntime::make_unique<CPUAllocator>(OrtMemoryInfo(MlCompute, OrtAllocatorType::OrtDeviceAllocator));
@@ -23,6 +29,7 @@ MlComputeExecutionProvider::MlComputeExecutionProvider()
 
   InsertAllocator(CreateAllocator(device_info));
 
+  std::cout << "NOTE: Not sure that we need an AllocatorCreationInfo for the CPUAllocator for the MLCompute backend";
   AllocatorCreationInfo cpu_memory_info(
       [](int) {
         return onnxruntime::make_unique<CPUAllocator>(
@@ -34,8 +41,59 @@ MlComputeExecutionProvider::MlComputeExecutionProvider()
 
 MlComputeExecutionProvider::~MlComputeExecutionProvider() {}
 
+bool IsValidSupportedNodesVec(const std::vector<size_t>& supported_node_vec, const GraphViewer& graph_viewer) {
+  if (supported_node_vec.empty())
+    return false;
+
+  if (supported_node_vec.size() == 1) {
+    const auto& node_indices = graph_viewer.GetNodesInTopologicalOrder();
+    const auto* node(graph_viewer.GetNode(node_indices[supported_node_vec[0]]));
+    const auto& op = node->OpType();
+    // It is not worth it to perform a single Reshape/Flatten/Identity operator
+    // which is only copying the data in NNAPI
+    // If this is the case, let it fall back
+    if (op == "Reshape" ||
+        op == "Flatten" ||
+        op == "Identity") {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool IsNodeSupported(const Node& node, const GraphViewer& graph_viewer) {
+  if (node.OpType () == "Gemm") 
+    return true;
+  if (node.OpType () == "LeakyRelu") 
+    return true;
+
+  return false;
+}
+
 std::vector<std::vector<size_t>> GetSupportedNodes(const GraphViewer& graph_viewer) {
   std::vector<std::vector<size_t>> supported_node_vecs;
+  std::vector<size_t> supported_node_vec;
+  const auto& node_indices = graph_viewer.GetNodesInTopologicalOrder();
+  for (size_t i = 0; i < node_indices.size(); i++) {
+    const auto* node(graph_viewer.GetNode(node_indices[i]));
+    bool supported = IsNodeSupported(*node, graph_viewer);
+    LOGS_DEFAULT(VERBOSE) << "Operator type: [" << node->OpType()
+                          << "] index: [" << i
+                          << "] name: [" << node->Name()
+                          << "] supported: [" << supported
+                          << "]";
+    if (supported) {
+      supported_node_vec.push_back(i);
+    } else {
+      if (IsValidSupportedNodesVec(supported_node_vec, graph_viewer)) {
+        supported_node_vecs.push_back(supported_node_vec);
+        supported_node_vec.clear();
+      }
+    }
+  }
+
+  if (IsValidSupportedNodesVec(supported_node_vec, graph_viewer))
+    supported_node_vecs.push_back(supported_node_vec);
 
   return supported_node_vecs;
 }
@@ -45,6 +103,7 @@ MlComputeExecutionProvider::GetCapability(const onnxruntime::GraphViewer& graph_
                                       const std::vector<const KernelRegistry*>& /*kernel_registries*/) const {
   std::vector<std::unique_ptr<ComputeCapability>> result;
 
+  std::cout << "MLCompute::GetCapability\n";
   // TODO: Task 812756: NnApi EP, add support for subgraph (If and Loop operators)
   if (graph_view.IsSubgraph()) {
     return result;
@@ -54,6 +113,7 @@ MlComputeExecutionProvider::GetCapability(const onnxruntime::GraphViewer& graph_
   for (const auto& node : graph_view.Nodes()) {
     for (auto* input : node.InputDefs()) {
       all_node_inputs.insert(input->Name());
+      std::cout << "Processing: " << input->Name () << "\n";
     }
   }
 
@@ -229,10 +289,71 @@ MlComputeExecutionProvider::GetCapability(const onnxruntime::GraphViewer& graph_
 common::Status MlComputeExecutionProvider::Compile(const std::vector<FusedNodeAndGraph>& fused_nodes_and_graphs,
                                                std::vector<NodeComputeInfo>& node_compute_funcs) {
   
-  // for (const auto& fused_node_and_graph : fused_nodes_and_graphs) {
-  //   Node& fused_node = fused_node_and_graph.fused_node;
-  //   const onnxruntime::GraphViewer& graph_viewer(fused_node_and_graph.filtered_graph);
+  std::cout << "ML_COMPUTE_COMPILE NODES\n";
+  for (const auto& node_and_viewer : fused_nodes_and_graphs) {
+    const onnxruntime::GraphViewer& graph_viewer(node_and_viewer.filtered_graph);
 
+    NodeComputeInfo compute_info;
+    const Node& node = node_and_viewer.fused_node;
+    std::cout << node.Name() << " ";
+
+    std::cout << "\n";
+
+
+    {
+     const GraphViewer& graph_viewer = node_and_viewer.filtered_graph;
+     std::cout << "Fusing nodes: ";
+     for (const auto& unfused_node : graph_viewer.Nodes()) {
+       std::cout << " '" << unfused_node.Name() << "':" << unfused_node.Index();
+     }
+     std::cout << std::endl;
+    }
+
+    compute_info.create_state_func = [](ComputeContext* /*context*/, FunctionState* /*state*/) {
+      return 0;
+    };
+
+    compute_info.release_state_func = [](FunctionState /*state*/) {
+    };
+
+    compute_info.compute_func = [&node](FunctionState /*state*/, const OrtCustomOpApi* c_api,
+                                        OrtKernelContext* context) -> Status {
+      Ort::CustomOpApi api{*c_api};  // use C++ API for convenience
+
+      const auto outputs = node.OutputDefs();
+      const size_t num_outputs = outputs.size();
+
+      for (size_t i = 0; i < num_outputs; i++) {
+        const auto* shape_proto = outputs[i]->Shape();
+        if (shape_proto == nullptr) {
+          return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Unknown output shapes are not supported");
+        }
+
+        TensorShape shape = utils::GetTensorShapeFromTensorShapeProto(*shape_proto);
+        if (shape.Size() < 0) {
+          // arbitrarily set any unknown dim to 1
+          for (size_t idx = 0, end = shape.NumDimensions(); idx < end; ++idx) {
+            if (shape[idx] == -1) {
+              shape[idx] = 1;
+            }
+          }
+        }
+
+        // create the output_tensor.
+        auto* ortvalue = api.KernelContext_GetOutput(context, i, shape.GetDims().data(), shape.GetDims().size());
+
+        // and fill with zeros
+        auto* tensor = ortvalue->GetMutable<Tensor>();
+        void* data = tensor->MutableDataRaw();
+        auto bytes = tensor->SizeInBytes();
+        memset(data, 0, bytes);
+      };
+
+      return Status::OK();
+    };
+
+    node_compute_funcs.push_back(std::move(compute_info));
+  // Node& fused_node = fused_node_and_graph.fused_node;
   //   MlCompute::ModelBuilder builder(graph_viewer);
   //   builder.SetUseNCHW(MlCompute_flags_ & MlCompute_FLAG_USE_NCHW);
   //   builder.SetUseFp16(MlCompute_flags_ & MlCompute_FLAG_USE_FP16);
@@ -418,7 +539,7 @@ common::Status MlComputeExecutionProvider::Compile(const std::vector<FusedNodeAn
   //   };
 
   //   node_compute_funcs.push_back(compute_info);
-  // }
+  }
   return Status::OK();
 }
 

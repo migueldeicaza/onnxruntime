@@ -22,7 +22,7 @@ std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_MlComp
 }
 }  // namespace onnxruntime
 
-ORT_API_STATUS_IMPL(OrtSessionOptionsAppendExecutionProvider_MlCompute, _In_ OrtSessionOptions* options) {
+ORT_API_STATUS_IMPL(OrtSessionOptionsAppendExecutionProvider_MLCompute, _In_ OrtSessionOptions* options) {
   options->provider_factories.push_back(onnxruntime::CreateExecutionProviderFactory_MlCompute());
   return nullptr;
 }
